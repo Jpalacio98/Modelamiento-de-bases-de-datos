@@ -20,11 +20,20 @@ departamentos = results_df[['codigodepartamentoatencion','nombredepartamentoaten
 depurar_DPTO = departamentos.drop_duplicates(subset='codigodepartamentoatencion')
 # Mostrar los resultados
 #print(depurar_DPTO)
-#convertimos el data frame en un csv 
+#convertimos el data frame en un json 
 depurar_DPTO.to_json("Tablas/departamentos.json", orient='records')
 
 # Verificación: cargar el archivo JSON de nuevo en un DataFrame
-df_desde_json = pd.read_json("Tablas/departamentos.json", orient='records')
+# df_desde_json = pd.read_json("Tablas/departamentos.json", orient='records')
+# # Mostrar el DataFrame cargado desde el archivo JSON
+# print(df_desde_json)
 
-# Mostrar el DataFrame cargado desde el archivo JSON
-print(df_desde_json)
+
+# construimos los datos para la tabla municipio
+municipios = results_df[['codigomunicipioatencion','nombremunicipioatencion']]
+#depuramos la tabla solo para dejar un insidencia de cada registro
+depurar_MUN = municipios.drop_duplicates(subset='codigomunicipioatencion')
+# Mostrar los resultados
+#print(depurar_DPTO)
+#convertimos el data frame en un json 
+depurar_DPTO.to_json("Tablas/municipios.json", orient='records')
