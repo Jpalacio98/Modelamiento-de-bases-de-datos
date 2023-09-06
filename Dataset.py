@@ -1,36 +1,64 @@
-import requests
-import dicttoxml
-import xml.etree.ElementTree as ET
+import pandas as pd
+import json
+from sodapy import Socrata
 
-# URL a la que deseas hacer la solicitud GET
-url = 'https://www.datos.gov.co/resource/xfif-myr2.json'
+client = Socrata("www.datos.gov.co",
+                 "U1UbMtgUtzZzxdlanUWUWx4mz",
+                 username="jdavidpalacio@unicesar.edu.co",
+                 password="@Jpalacio0949")
 
-# Realiza la solicitud GET
-response = requests.get(url)
+results = client.get("xfif-myr2", limit=2000)
 
-# Verifica si la solicitud fue exitosa (código de estado 200)
-# if response.status_code == 200:
-#     # Imprime el contenido de la respuesta
-#     print(response.content)
-# else:
-#     # Imprime un mensaje de error si la solicitud no fue exitosa
-#     print(f'Error en la solicitud. Código de estado: {response.status_code}')
+# Convert to pandas DataFrame
+results_df = pd.DataFrame.from_records(results)
 
 
-root = ET.Element("root")
+#----------------------------------------------------------------------------------------------------------------------
+# construimos los datos para la tabla departamento
+departamentos = results_df[['codigodepartamentoatencion','nombredepartamentoatencion']]
+#depuramos la tabla solo para dejar un insidencia de cada registro
+depurar_DPTO = departamentos.drop_duplicates(subset='codigodepartamentoatencion')
+# Mostrar los resultados
+#print(depurar_DPTO)
+#convertimos el data frame en un json 
+depurar_DPTO.to_json("Tablas/departamentos.json", orient='records')
 
-# Convertir los datos JSON a XML
-print(len(response.json()))
-# for index in response.json():
-#     for key, value in index.items():
-#         element = ET.SubElement(root, key)
-#         element.text = str(value)
+# Verificación: cargar el archivo JSON de nuevo en un DataFrame
+# df_desde_json = pd.read_json("Tablas/departamentos.json", orient='records')
+# # Mostrar el DataFrame cargado desde el archivo JSON
+#print(df_desde_json)
 
-# # Crear un objeto ElementTree
-# tree = ET.ElementTree(root)
+#----------------------------------------------------------------------------------------------------------------------
+# construimos los datos para la tabla municipio
+municipios = results_df[['codigomunicipioatencion','nombremunicipioatencion','codigodepartamentoatencion']]
+#depuramos la tabla solo para dejar un insidencia de cada registro
+depurar_MUN = municipios.drop_duplicates(subset='codigomunicipioatencion')
+# Mostrar los resultados
+#print(depurar_DPTO)
+#convertimos el data frame en un json 
+depurar_MUN.to_json("Tablas/municipios.json", orient='records')
 
-# # Guardar el archivo XML
-# xml_filename = "datos.xml"
-# tree.write(xml_filename)
+#----------------------------------------------------------------------------------------------------------------------
+# construimos los datos para la tabla beneficiario
+beneficiario = results_df[['bancarizado','discapacidad',
+                           'etnia','genero','nivelescolaridad',
+                           'pais','tipodocumento','titular',
+                           'codigomunicipioatencion','estadobeneficiario']]
+#convertimos el data frame en un json 
+beneficiario.to_json("Tablas/beneficiario.json", orient='records')
+# Mostrar los resultados
+#print(beneficiario)
 
-# print(f"Archivo XML '{xml_filename}' guardado correctamente.")
+
+# construimos los datos para la tabla programa
+programa = results_df[['','fechainscripcionbeneficiario',
+                       'tipoasignacionbeneficio',
+                       'tipobeneficio','tipopoblacion',
+                       'rangobeneficioconsolidadoasignado',
+                       'rangoultimobeneficioasignado',
+                       'fechaultimobeneficioasignado',
+                       'rangoedad','cantidaddebeneficiarios']]
+#convertimos el data frame en un json 
+programa.to_json("Tablas/programa.json", orient='records')
+# Mostrar los resultados
+#print(programa.loc[programa['cantidaddebeneficiarios']>'2'])
